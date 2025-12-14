@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>WebAR Christmas Card</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+  <!-- ========================================================= -->
+  <!-- STEP 3️⃣：複数アニメーションを同時再生するためのJS -->
+  <!-- 👉 ここは <head> 内に書く（または別JSにしてもOK） -->
+  <!-- ========================================================= -->
+  <script>
+    AFRAME.registerComponent('multi-animation', {
+      init: function () {
+        const el = this.el;
+
+        el.addEventListener('model-loaded', () => {
+          const model = el.getObject3D('mesh');
+
+          // glb に含まれるすべての Animation を取得
+          const animations = el.components['gltf-model'].model.animations;
+
+          // AnimationMixer を作成
+          this.mixer = new THREE.AnimationMixer(model);
+
+          // 全アニメーションを同時再生
+          animations.forEach((clip) => {
+            const action = this.mixer.clipAction(clip);
+            action.play();
+          });
+        });
+      },
+
+      tick: function (time, deltaTime) {
+        if (this.mixer) {
+          // deltaTime は ms → 秒に変換
+          this.mixer.update(deltaTime / 1000);
+        }
+      }
+    });
+  </script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+
+  <a-scene
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="colorManagement: true;"
+  >
+
+    <!-- ===================================================== -->
+    <!-- マーカー（まずはテスト用：hiro） -->
+    <!-- ===================================================== -->
+    <a-marker preset="hiro">
+
+      <!-- ================================================= -->
+      <!-- glbモデル -->
+      <!-- 👉 STEP 3️⃣ のコンポーネントはここで使う -->
+      <!-- ================================================= -->
+      <a-entity
+        id="christmas-model"
+        gltf-model="url(SantaKame_06_text.glb)"
+        multi-animation
+        position="0 0 0"
+        scale="0.5 0.5 0.5">
+      </a-entity>
+
+    </a-marker>
+
+    <!-- カメラ -->
+    <a-entity camera></a-entity>
+
+  </a-scene>
+
+</body>
+</html>
+
+
+
