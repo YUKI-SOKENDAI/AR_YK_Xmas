@@ -1,79 +1,144 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <title>WebAR Christmas Card</title>
+  <meta charset="utf-8">
+  <title>WebXR Markerless AR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-  <!-- AR.js (A-Frame) -->
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
-  <!-- =========================================================
-       複数アニメーションを同時再生するコンポーネント
-       ========================================================= -->
-  <script>
-    AFRAME.registerComponent('multi-animation', {
-      init: function () {
-        const el = this.el;
-
-        el.addEventListener('model-loaded', () => {
-          const model = el.getObject3D('mesh');
-          const animations = el.components['gltf-model'].model.animations;
-
-          this.mixer = new THREE.AnimationMixer(model);
-
-          animations.forEach((clip) => {
-            const action = this.mixer.clipAction(clip);
-            action.play();   // すべて同時再生
-          });
-        });
-      },
-
-      tick: function (time, deltaTime) {
-        if (this.mixer) {
-          this.mixer.update(deltaTime / 1000);
-        }
-      }
-    });
-  </script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    #overlay {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 20px;
+      z-index: 10;
+    }
+  </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
+<body>
+  <div id="overlay">床や机に向けてタップしてください</div>
 
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="colorManagement: true;"
-  >
+  <!-- Three.js -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/jsm/webxr/ARButton.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js"></script>
 
-    <!-- =====================================================
-         QRコードから生成したカスタムマーカー
-         ===================================================== -->
-    <a-marker
-      type="pattern"
-      url="pattern-qr-code.patt"
-    >
+  <script type="module">
+    let scene, camera, renderer;
+    let controller;
+    let reticle;
+    let hitTestSource = null;
+    let hitTestSourceRequested = false;
+    let model = null;
+    let mixer = null;
 
-      <!-- =================================================
-           glbモデル（サンタ＋カメ＋文字）
-           ================================================= -->
-      <a-entity
-        id="christmas-model"
-        gltf-model="url(SantaKame_06_text.glb)"
-        multi-animation
-        position="0 0 0"
-        scale="0.2 0.2 0.2">
-      </a-entity>
+    init();
+    animate();
 
-    </a-marker>
+    function init() {
+      scene = new THREE.Scene();
 
-    <!-- カメラ -->
-    <a-entity camera></a-entity>
+      camera = new THREE.PerspectiveCamera();
 
-  </a-scene>
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      document.body.appendChild(renderer.domElement);
 
+      document.body.appendChild(
+        ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] })
+      );
+
+      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+      scene.add(light);
+
+      // レティクル（設置位置）
+      reticle = new THREE.Mesh(
+        new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+      );
+      reticle.matrixAutoUpdate = false;
+      reticle.visible = false;
+      scene.add(reticle);
+
+      // コントローラ（タップ検出）
+      controller = renderer.xr.getController(0);
+      controller.addEventListener('select', onSelect);
+      scene.add(controller);
+
+      // glb 読み込み
+      const loader = new THREE.GLTFLoader();
+      loader.load('SantaKame_06_text.glb', (gltf) => {
+        model = gltf.scene;
+        model.scale.set(0.3, 0.3, 0.3);
+        model.visible = false;
+        scene.add(model);
+
+        // 複数アニメーション同時再生
+        if (gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach((clip) => {
+            mixer.clipAction(clip).play();
+          });
+        }
+      });
+    }
+
+    function onSelect() {
+      if (reticle.visible && model) {
+        model.position.setFromMatrixPosition(reticle.matrix);
+        model.visible = true;
+        document.getElementById('overlay').style.display = 'none';
+      }
+    }
+
+    function animate() {
+      renderer.setAnimationLoop(render);
+    }
+
+    function render(timestamp, frame) {
+      if (frame) {
+        const referenceSpace = renderer.xr.getReferenceSpace();
+        const session = renderer.xr.getSession();
+
+        if (!hitTestSourceRequested) {
+          session.requestReferenceSpace('viewer').then((space) => {
+            session.requestHitTestSource({ space }).then((source) => {
+              hitTestSource = source;
+            });
+          });
+
+          session.addEventListener('end', () => {
+            hitTestSourceRequested = false;
+            hitTestSource = null;
+          });
+
+          hitTestSourceRequested = true;
+        }
+
+        if (hitTestSource) {
+          const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+          if (hitTestResults.length) {
+            const hit = hitTestResults[0];
+            const pose = hit.getPose(referenceSpace);
+            reticle.visible = true;
+            reticle.matrix.fromArray(pose.transform.matrix);
+          } else {
+            reticle.visible = false;
+          }
+        }
+      }
+
+      if (mixer) mixer.update(0.016);
+      renderer.render(scene, camera);
+    }
+  </script>
 </body>
 </html>
