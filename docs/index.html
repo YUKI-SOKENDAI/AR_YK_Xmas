@@ -50,14 +50,12 @@
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="colorManagement: true;"
+    vr-mode-ui="enabled: false" arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
   >
 
     <!-- ===================================================== -->
     <!-- マーカー（まずはテスト用：hiro） -->
     <!-- ===================================================== -->
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
 
       <!-- ================================================= -->
       <!-- glbモデル -->
@@ -67,7 +65,7 @@
         id="christmas-model"
         gltf-model="url(SantaKame_06_text.glb)"
         multi-animation
-        position="0 0 0"
+        position="0 0 -1"
         scale="0.5 0.5 0.5">
       </a-entity>
 
@@ -79,6 +77,7 @@
 
 </body>
 </html>
+
 
 
 
