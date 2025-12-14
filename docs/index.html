@@ -2,16 +2,16 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>WebAR Christmas Card</title>
+  <title>WebAR Christmas (Markerless)</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-  <!-- AR.js (A-Frame) -->
+  <!-- AR.js -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
   <!-- =========================================================
-       複数アニメーションを同時再生するコンポーネント
+       複数アニメーション同時再生コンポーネント
        ========================================================= -->
   <script>
     AFRAME.registerComponent('multi-animation', {
@@ -26,7 +26,7 @@
 
           animations.forEach((clip) => {
             const action = this.mixer.clipAction(clip);
-            action.play();   // すべて同時再生
+            action.play();
           });
         });
       },
@@ -50,31 +50,24 @@
   >
 
     <!-- =====================================================
-         QRコードから生成したカスタムマーカー
+         カメラ
          ===================================================== -->
-    <a-marker
-      type="pattern"
-      url="pattern-qr-code.patt"
-    >
-
-      <!-- =================================================
-           glbモデル（サンタ＋カメ＋文字）
-           ================================================= -->
-      <a-entity
-        id="christmas-model"
-        gltf-model="url(SantaKame_06_text.glb)"
-        multi-animation
-        position="0 0 0"
-        scale="0.5 0.5 0.5">
-      </a-entity>
-
-    </a-marker>
-
-    <!-- カメラ -->
     <a-entity camera></a-entity>
+
+    <!-- =====================================================
+         マーカーフリー表示オブジェクト
+         ※ カメラ前 1m に固定表示
+         ===================================================== -->
+    <a-entity
+      id="christmas-model"
+      gltf-model="url(SantaKame_06_text.glb)"
+      multi-animation
+      position="0 0 -1"
+      rotation="0 0 0"
+      scale="0.5 0.5 0.5">
+    </a-entity>
 
   </a-scene>
 
 </body>
 </html>
-
