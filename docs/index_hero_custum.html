@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>WebAR Christmas Card</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+  <!-- =========================================================
+       複数アニメーション同時再生
+       ========================================================= -->
+  <script>
+    AFRAME.registerComponent('multi-animation', {
+      init: function () {
+        const el = this.el;
+
+        el.addEventListener('model-loaded', () => {
+          const model = el.getObject3D('mesh');
+          const animations = el.components['gltf-model'].model.animations;
+
+          this.mixer = new THREE.AnimationMixer(model);
+
+          animations.forEach((clip) => {
+            this.mixer.clipAction(clip).play();
+          });
+        });
+      },
+      tick: function (t, dt) {
+        if (this.mixer) {
+          this.mixer.update(dt / 1000);
+        }
+      }
+    });
+  </script>
+
+  <!-- =========================================================
+       マーカー認識後にARを空間固定する
+       ========================================================= -->
+  <script>
+    AFRAME.registerComponent('marker-freeze', {
+      init: function () {
+        const marker = document.querySelector('#hiro-marker');
+        const model  = document.querySelector('#christmas-model');
+        let fixed = false;
+
+        marker.addEventListener('markerFound', () => {
+          if (fixed) return;
+
+          marker.object3D.updateMatrixWorld(true);
+
+          const pos = new THREE.Vector3();
+          const quat = new THREE.Quaternion();
+          const scale = new THREE.Vector3();
+
+          marker.object3D.matrixWorld.decompose(pos, quat, scale);
+
+          model.object3D.position.copy(pos);
+          model.object3D.quaternion.copy(quat);
+          model.object3D.scale.multiply(scale);
+
+          model.setAttribute('visible', true);
+
+          fixed = true;
+          console.log('AR fixed in world');
+        });
+      }
+    });
+  </script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled:false"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="colorManagement: true;"
+    marker-freeze
+  >
+
+    <!-- =====================================================
+         マーカー（hiro or QR）
+         ===================================================== -->
+    <a-marker id="hiro-marker" preset="hiro"></a-marker>
+
+    <!-- =====================================================
+         モデル（マーカー外に配置）
+         ===================================================== -->
+    <a-entity
+      id="christmas-model"
+      gltf-model="url(SantaKame_06_text.glb)"
+      multi-animation
+      visible="false"
+      scale="0.2 0.2 0.2">
+    </a-entity>
+
+    <!-- カメラ -->
+    <a-entity camera></a-entity>
+
+  </a-scene>
+
+</body>
+</html>
