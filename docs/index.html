@@ -62,6 +62,9 @@
           model.object3D.quaternion.copy(quat);
           model.object3D.scale.multiply(scale);
 
+          // ★ ここが追加：Y軸に90度回転
+          model.object3D.rotation.y += Math.PI / 2;
+
           model.setAttribute('visible', true);
 
           fixed = true;
