@@ -7,13 +7,12 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-  <!-- AR.js -->
+  <!-- AR.js (A-Frame) -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-  <!-- ========================================================= -->
-  <!-- STEP 3️⃣：複数アニメーションを同時再生するためのJS -->
-  <!-- 👉 ここは <head> 内に書く（または別JSにしてもOK） -->
-  <!-- ========================================================= -->
+  <!-- =========================================================
+       複数アニメーションを同時再生するコンポーネント
+       ========================================================= -->
   <script>
     AFRAME.registerComponent('multi-animation', {
       init: function () {
@@ -21,24 +20,19 @@
 
         el.addEventListener('model-loaded', () => {
           const model = el.getObject3D('mesh');
-
-          // glb に含まれるすべての Animation を取得
           const animations = el.components['gltf-model'].model.animations;
 
-          // AnimationMixer を作成
           this.mixer = new THREE.AnimationMixer(model);
 
-          // 全アニメーションを同時再生
           animations.forEach((clip) => {
             const action = this.mixer.clipAction(clip);
-            action.play();
+            action.play();   // すべて同時再生
           });
         });
       },
 
       tick: function (time, deltaTime) {
         if (this.mixer) {
-          // deltaTime は ms → 秒に変換
           this.mixer.update(deltaTime / 1000);
         }
       }
@@ -50,19 +44,22 @@
 
   <a-scene
     embedded
+    vr-mode-ui="enabled: false"
     arjs="sourceType: webcam; debugUIEnabled: false;"
     renderer="colorManagement: true;"
   >
 
-    <!-- ===================================================== -->
-    <!-- マーカー（まずはテスト用：hiro） -->
-    <!-- ===================================================== -->
-    <a-marker preset="hiro">
+    <!-- =====================================================
+         QRコードから生成したカスタムマーカー
+         ===================================================== -->
+    <a-marker
+      type="pattern"
+      url="pattern-qr-code_mine1.patt"
+    >
 
-      <!-- ================================================= -->
-      <!-- glbモデル -->
-      <!-- 👉 STEP 3️⃣ のコンポーネントはここで使う -->
-      <!-- ================================================= -->
+      <!-- =================================================
+           glbモデル（サンタ＋カメ＋文字）
+           ================================================= -->
       <a-entity
         id="christmas-model"
         gltf-model="url(SantaKame_06_text.glb)"
@@ -80,3 +77,4 @@
 
 </body>
 </html>
+
