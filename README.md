@@ -1,31 +1,30 @@
-ARクリスマスカード制作記録
+# ARクリスマスカード制作記録 ― 3Dモデル作成からWebAR表示まで ―
 
-― 3Dモデル作成からWebAR表示まで ―
-
-概要
+## 概要
 
 本記事では、
 3Dキャラクターモデルを制作し、WebARとして安定表示するクリスマスカードを作成した際の実装手順とハマりどころをまとめる。
 
 特に以下を重点的に扱う。
 
-Blenderでの キーフレームアニメーション追加
+- Blenderでの キーフレームアニメーション追加
 
-glb化した際の AR環境でのテクスチャ透け問題
+- glb化した際の AR環境でのテクスチャ透け問題
 
-A-Frame + AR.js（hiroマーカー） を用いた安定AR構成
+- A-Frame + AR.js（hiroマーカー） を用いた安定AR構成
 
-echo3D 等を使わず、自前WebARで複数アニメーションを再生する方法
+- echo3D 等を使わず、自前WebARで複数アニメーションを再生する方法
 
-採用した最終構成
-項目	内容
-3Dモデル生成	Meshy.ai
-3D編集・アニメーション	Blender
-フォーマット	glTF Binary（.glb）
-WebAR	A-Frame + AR.js
-マーカー	hiroマーカー
-配信	GitHub Pages
-なぜマーカーARを選択したか
+## 採用した最終構成
+| 項目 |	内容 |
+|3Dモデル生成|Meshy.ai|
+|3D編集・アニメーション|Blender|
+|フォーマット|glTF Binary（.glb）|
+|WebAR|A-Frame + AR.js|
+|マーカー|hiroマーカー|
+|配信|GitHub Pages|
+	
+## なぜマーカーARを選択したか
 
 WebARには以下の選択肢がある。
 
