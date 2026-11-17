@@ -1,0 +1,163 @@
+
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "AR_YK_Xmas",
+    "title": "AR Christmas Card",
+    "description": "AI生成3Dキャラクターと複数アニメーションを利用した紙のクリスマスカード向けWebAR",
+    "status": "completed",
+    "handoff_date": "2026-11-16",
+    "language": "ja"
+  },
+  "repository": {
+    "url": "https://github.com/YUKI-SOKENDAI/AR_YK_Xmas",
+    "branch": "main",
+    "pages_directory": "docs",
+    "pages_url_expected": "https://yuki-sokendai.github.io/AR_YK_Xmas/",
+    "entrypoint": "docs/index.html",
+    "model": "docs/SantaKame_06_text.glb"
+  },
+  "tools": {
+    "model_generation": "Meshy.ai",
+    "dcc_transfer": "Meshy DCC Bridge",
+    "editing": "Blender",
+    "web_ar": "AR.js",
+    "rendering": "A-Frame 1.5.0",
+    "animation_runtime": "Three.js AnimationMixer",
+    "hosting": "GitHub Pages"
+  },
+  "assets": {
+    "characters": [
+      "Santa Claus",
+      "Turtle"
+    ],
+    "additional_assets": [
+      "Curved 3D text",
+      "Christmas decorative assets"
+    ],
+    "format": "GLB",
+    "development_file_size_mb_approx": 75
+  },
+  "animation": {
+    "source_motion": {
+      "tool": "Meshy.ai",
+      "type": "walking",
+      "looped": true
+    },
+    "blender_motion": {
+      "types": [
+        "flying",
+        "circular_motion",
+        "position_animation",
+        "rotation_animation",
+        "text_orbit"
+      ],
+      "properties": [
+        "location",
+        "rotation"
+      ],
+      "flight_cycle_frames_approx": 240,
+      "keyframe_based": true
+    },
+    "multiple_clips": true,
+    "independent_periods": true,
+    "runtime_simultaneous_playback": true
+  },
+  "material_issue": {
+    "symptom": "Rear and oblique viewing angles caused apparent transparency in AR environments",
+    "blender_viewport_appeared_normal": true,
+    "resolved": true,
+    "confirmed_single_root_cause": false,
+    "investigated_factors": [
+      "alpha connection",
+      "alpha blending",
+      "backface culling",
+      "metallic",
+      "mesh geometry",
+      "solidify"
+    ],
+    "changes": {
+      "base_color_texture": "connected",
+      "texture_alpha_to_bsdf_alpha": "disconnected",
+      "bsdf_alpha": 1.0,
+      "metallic": 0.0,
+      "roughness_approx": 0.6,
+      "transmission": 0.0,
+      "mesh_cleanup": true,
+      "solidify_tested": true,
+      "uniform_thickness_noise_observed": true,
+      "normal_recalculation_performed": false
+    },
+    "validation": "Transparency issue reported resolved after material adjustments"
+  },
+  "web_ar": {
+    "marker_type": "hiro",
+    "marker_based": true,
+    "markerless": false,
+    "spatial_anchor_persistence": false,
+    "model_scale": [0.2, 0.2, 0.2],
+    "model_position": [0, 0, 0],
+    "model_rotation_degrees": [0, 0, 0],
+    "model_filename": "SantaKame_06_text.glb",
+    "animation_component": "multi-animation",
+    "animation_strategy": "Play all GLTF AnimationClips with one THREE.AnimationMixer",
+    "marker_visibility_required": true,
+    "camera_permission_required": true,
+    "https_required": true
+  },
+  "experiments": [
+    {
+      "name": "echo3D",
+      "status": "evaluated",
+      "observation": "Desired simultaneous playback was not achieved in the tested configuration"
+    },
+    {
+      "name": "Onirix",
+      "status": "evaluated"
+    },
+    {
+      "name": "AR.js marker-based",
+      "status": "successful",
+      "selected": true
+    },
+    {
+      "name": "camera-relative markerless",
+      "status": "rejected",
+      "reason": "No real-world anchoring or free walk-around"
+    },
+    {
+      "name": "WebXR hit-test",
+      "status": "incomplete",
+      "issue": "AR entry button not displayed; root cause unconfirmed"
+    },
+    {
+      "name": "marker freeze",
+      "status": "not_adopted"
+    }
+  ],
+  "known_issues": [
+    "Large GLB file size",
+    "Marker must remain visible for tracking",
+    "Potential animation clip conflicts on shared targets",
+    "WebXR compatibility and module loading not yet validated"
+  ],
+  "future_work": [
+    "GLB optimization",
+    "Texture compression",
+    "Polygon reduction",
+    "Loading progress UI",
+    "Custom marker",
+    "WebXR hit-test",
+    "Cross-device testing",
+    "Animation playback controls"
+  ],
+  "codex_instructions": [
+    "Preserve the working hiro marker implementation",
+    "Preserve simultaneous playback of independent animation clips",
+    "Do not introduce marker-freeze behavior without explicit request",
+    "Do not treat WebXR as completed",
+    "Avoid unintentional alpha transparency in GLB materials",
+    "Distinguish observed outcomes from inferred causes",
+    "Use the repository's actual index.html as the authoritative implementation"
+  ]
+}
